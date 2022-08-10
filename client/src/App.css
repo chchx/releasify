@@ -27,24 +27,17 @@ main {
 .timeline-wrapper {
   display: flex;
   flex-direction: column;
-  border: solid 1px white;
-  border-style: dotted;
+  /* border: solid 1px white; */
+  /* border-style: dotted; */
   width: 90%;
   margin: 0 auto;
   margin-top: 40px;
 }
 
-.timeline-row-1 {
+.timeline-row {
   display: flex;
   flex-direction: row;
-  border: solid 1px white;
-  /* height: 300px; */
-}
-
-.timeline-row-2 {
-  display: flex;
-  flex-direction: row;
-  border: solid 1px white;
+  /* border: solid 1px white; */
   /* height: 300px; */
 }
 
@@ -53,13 +46,18 @@ ul {
   text-align: left;
   color: white;
   font-size: 14px;
+  padding-left: 20;
 }
 
-.month {
+.month-container {
   color: white;
   font-size: 22px;
   text-align: center;
   flex: 1;
+}
+
+.month-title {
+  text-transform: uppercase;
 }
 /* .timeline-row-3 {
   display: flex;
@@ -67,6 +65,10 @@ ul {
   border: solid 1px white;
   height: 200px;
 } */
+
+a {
+  color: #1DB954;
+}
 
 .App-link {
   color: #61dafb;

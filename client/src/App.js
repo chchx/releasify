@@ -15,6 +15,7 @@ function App() {
   ];
 
   const [token, setToken] = useState('');
+  const [after, setAfter] = useState(null);
   const [followedArtists, setFollowedArtists] = useState('');
   const [albumData, setAlbumData] = useState({});
 
@@ -30,7 +31,10 @@ function App() {
     }
 
     setToken(token);
+
+
   }, []);
+
 
   const getFollowedArtists = async (e) => {
     e.preventDefault();
@@ -42,8 +46,15 @@ function App() {
       params: {
         type: 'artist',
         limit: 50,
+        after: after,
       },
     });
+
+    setFollowedArtists(followedArtists.slice().concat(data))
+
+
+    // setAfter(data.artists.cursors.after);
+
 
     // setFollowedArtists(data.artists.items);
     const artistIds = data.artists.items.map((artistData) => artistData.id);
@@ -113,6 +124,12 @@ function App() {
     });
 
     console.log(calendarObj)
+    // const filtered = arr.filter(({id}, index) => !ids.includes(id, index + 1));
+
+    Object.keys(calendarObj).forEach((month) => {
+      calendarObj[month] = calendarObj[month].filter((month, index, array) => array.findIndex(t => t.name == month.name) === index);
+
+    })
     setAlbumData(calendarObj);
   };
 
@@ -131,25 +148,40 @@ function App() {
         console */}
         {/* <p>{!data ? "Loading..." : data}</p> */}
         <h1>Timelineify</h1>
-
-        {!token
-          ? <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join('%20')}&response_type=${RESPONSE_TYPE}&show_dialog=true`}>Login to Spotify</a>
-          : <button onClick={logout}>Logout</button>}
         {token
           ? <button onClick={getFollowedArtists}>Load timeline</button>
           : ''}
+        {!token
+          ? <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join('%20')}&response_type=${RESPONSE_TYPE}&show_dialog=true`}>Login to Spotify</a>
+          : <button onClick={logout}>Logout</button>}
+
       </header>
       <main>
         <div className="timeline-wrapper">
-
-          <div className="timeline-row-1">
+          <div className="timeline-row">
             {Object.keys(albumData).map((month, index) => {
               if (index <= 5) {
                 return (
-                  <div className="month">
-                    {month}
+                  <div className="month-container">
+                    <div className="month-title">{month}</div>
                     <ul>
-                      {albumData[month].map((album) => {
+                      {albumData[month].map((album, index, array) => {
+                        return <li><a href={album.external_urls.spotify}>{album.name}</a> by {album.artists[0].name}</li>
+                      })}
+                    </ul>
+                  </div>
+                );
+              }
+            })}
+          </div>
+          <div className="timeline-row">
+            {Object.keys(albumData).map((month, index) => {
+              if (index > 5) {
+                return (
+                  <div className="month-container">
+                    <div className="month-title">{month}</div>
+                    <ul>
+                      {albumData[month].map((album, index, array) => {
                         return <li>{album.name} by {album.artists[0].name}</li>
                       })}
                     </ul>
@@ -157,9 +189,6 @@ function App() {
                 )
               }
             })}
-          </div>
-          <div className="timeline-row-2">
-
           </div>
           {/* <div className="timeline-row-3">
 
