@@ -42,7 +42,7 @@ main {
 }
 
 ul {
-  /* list-style: none; */
+  list-style: none;
   text-align: left;
   color: white;
   font-size: 14px;

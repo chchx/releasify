@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -16,6 +16,7 @@ function App() {
 
   const [token, setToken] = useState('');
   const [after, setAfter] = useState(null);
+  const [artistIds, setArtistIds] = useState([]);
   const [followedArtists, setFollowedArtists] = useState('');
   const [albumData, setAlbumData] = useState({});
 
@@ -32,62 +33,95 @@ function App() {
 
     setToken(token);
 
-
+    // axios.get('https://api.spotify.com/v1/me/following', {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    //   params: {
+    //     type: 'artist',
+    //     limit: 50,
+    //   },
+    // })
+    //   .then((response) => {
+    //     setArtistIds(response.data.artists.items.map((artistData) => artistData.id));
+    //     setAfter(response.data.artists.cursors.after);
+    //   });
   }, []);
 
+  const getArtists = (cursor, data = []) => axios.get('https://api.spotify.com/v1/me/following', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      type: 'artist',
+      limit: 50,
+      after: cursor ? cursor : null
+    },
+  }) // API supports a cursor param (?after=)
+    .then((response) => {
+      console.log('first response is...', response);
+      console.log('CURSOR IS...', response.data.artists.cursors.after)
+      data.push(...response.data.artists.items);
+      if (response.data.artists.cursors.after === null) return data;
+      return getArtists(response.data.artists.cursors.after, data);
+    });
 
   const getFollowedArtists = async (e) => {
     e.preventDefault();
 
-    const { data } = await axios.get('https://api.spotify.com/v1/me/following', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        type: 'artist',
-        limit: 50,
-        after: after,
-      },
-    });
+    getArtists()
+      .then((result) => {
+        console.log('final data is...', result);
+        // setArtistIds(result.map((artistData) => artistData.id));
+        return result.map((artistData) => artistData.id);
+      })
+      .then((mappedIds) => {
+        return Promise.all(mappedIds.map(async (item) => {
+          let response;
+          try {
+            response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              params: {
+                include_groups: 'album',
+              },
+            });
+          } catch (err) {
+            return err;
+          }
+          return response.data.items;
+        }));
+      })
+      .then( (albums) => {
+        let albumArray = albums.flat();
+        setAlbumData(createCalendar(albumArray))
+      })
 
-    setFollowedArtists(followedArtists.slice().concat(data))
+    // const res = await Promise.all(artistIds.map(async (item) => {
+    //   let response;
+    //   try {
+    //     response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //       params: {
+    //         include_groups: 'album',
+    //       },
+    //     });
+    //   } catch (err) {
+    //     return err;
+    //   }
+    //   return response.data.items;
+    // }));
 
+    // let albumArray = res.flat();
+    // console.log(albumArray);
+    // // setAlbumData(res.flat());
+    // setAlbumData(calendarObj);
+  };
 
-    // setAfter(data.artists.cursors.after);
-
-
-    // setFollowedArtists(data.artists.items);
-    const artistIds = data.artists.items.map((artistData) => artistData.id);
-
-    console.log('artist ids are...', artistIds);
-
-    // const promises = artistIds.map((artistId) => {
-    //   return axios.get(`https://api.spotify.com/v1/artists/${artistId}/albums`)
-    // });
-
-    // console.log('promises are...', promises)
-
-    const res = await Promise.all(artistIds.map(async (item) => {
-      let response;
-      try {
-        response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: {
-            include_groups: 'album',
-          },
-        });
-      } catch (err) {
-        return err;
-      }
-      return response.data.items;
-    }));
-
-    let albumArray = res.flat();
-    console.log(albumArray);
-    setAlbumData(res.flat());
-
+  const createCalendar = (albumArray) => {
     const calendarObj = {
       January: [],
       February: [],
@@ -128,9 +162,9 @@ function App() {
 
     Object.keys(calendarObj).forEach((month) => {
       calendarObj[month] = calendarObj[month].filter((month, index, array) => array.findIndex(t => t.name == month.name) === index);
+    });
 
-    })
-    setAlbumData(calendarObj);
+    return calendarObj;
   };
 
   const logout = () => {
@@ -139,7 +173,6 @@ function App() {
   };
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
 
   return (
     <div className="App">
