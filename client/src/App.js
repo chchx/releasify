@@ -32,20 +32,6 @@ function App() {
     }
 
     setToken(token);
-
-    // axios.get('https://api.spotify.com/v1/me/following', {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    //   params: {
-    //     type: 'artist',
-    //     limit: 50,
-    //   },
-    // })
-    //   .then((response) => {
-    //     setArtistIds(response.data.artists.items.map((artistData) => artistData.id));
-    //     setAfter(response.data.artists.cursors.after);
-    //   });
   }, []);
 
   const getArtists = (cursor, data = []) => axios.get('https://api.spotify.com/v1/me/following', {
@@ -75,50 +61,26 @@ function App() {
         // setArtistIds(result.map((artistData) => artistData.id));
         return result.map((artistData) => artistData.id);
       })
-      .then((mappedIds) => {
-        return Promise.all(mappedIds.map(async (item) => {
-          let response;
-          try {
-            response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              params: {
-                include_groups: 'album',
-              },
-            });
-          } catch (err) {
-            return err;
-          }
-          return response.data.items;
-        }));
-      })
-      .then( (albums) => {
-        let albumArray = albums.flat();
-        setAlbumData(createCalendar(albumArray))
-      })
-
-    // const res = await Promise.all(artistIds.map(async (item) => {
-    //   let response;
-    //   try {
-    //     response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //       params: {
-    //         include_groups: 'album',
-    //       },
-    //     });
-    //   } catch (err) {
-    //     return err;
-    //   }
-    //   return response.data.items;
-    // }));
-
-    // let albumArray = res.flat();
-    // console.log(albumArray);
-    // // setAlbumData(res.flat());
-    // setAlbumData(calendarObj);
+      .then((mappedIds) => Promise.all(mappedIds.map(async (item) => {
+        let response;
+        try {
+          response = await axios.get(`https://api.spotify.com/v1/artists/${item}/albums`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              include_groups: 'album',
+            },
+          });
+        } catch (err) {
+          return err;
+        }
+        return response.data.items;
+      })))
+      .then((albums) => {
+        const albumArray = albums.flat();
+        setAlbumData(createCalendar(albumArray));
+      });
   };
 
   const createCalendar = (albumArray) => {
@@ -158,12 +120,10 @@ function App() {
     });
 
     console.log(calendarObj)
-    // const filtered = arr.filter(({id}, index) => !ids.includes(id, index + 1));
 
     Object.keys(calendarObj).forEach((month) => {
-      calendarObj[month] = calendarObj[month].filter((month, index, array) => array.findIndex(t => t.name == month.name) === index);
+      calendarObj[month] = calendarObj[month].filter((month, i, array) => array.findIndex(t => t.name === month.name) === i);
     });
-
     return calendarObj;
   };
 
@@ -181,13 +141,6 @@ function App() {
         console */}
         {/* <p>{!data ? "Loading..." : data}</p> */}
         <h1>Timelineify</h1>
-        {token
-          ? <button onClick={getFollowedArtists}>Load timeline</button>
-          : ''}
-        {!token
-          ? <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join('%20')}&response_type=${RESPONSE_TYPE}&show_dialog=true`}>Login to Spotify</a>
-          : <button onClick={logout}>Logout</button>}
-
       </header>
       <main>
         <div className="timeline-wrapper">
@@ -198,7 +151,7 @@ function App() {
                   <div className="month-container">
                     <div className="month-title">{month}</div>
                     <ul>
-                      {albumData[month].map((album, index, array) => {
+                      {albumData[month].map((album, array) => {
                         return <li><a href={album.external_urls.spotify}>{album.name}</a> by {album.artists[0].name}</li>
                       })}
                     </ul>
@@ -214,8 +167,8 @@ function App() {
                   <div className="month-container">
                     <div className="month-title">{month}</div>
                     <ul>
-                      {albumData[month].map((album, index, array) => {
-                        return <li>{album.name} by {album.artists[0].name}</li>
+                      {albumData[month].map((album, array) => {
+                        return <li><a href={album.external_urls.spotify}>{album.name}</a> by {album.artists[0].name}</li>
                       })}
                     </ul>
                   </div>
@@ -223,9 +176,15 @@ function App() {
               }
             })}
           </div>
-          {/* <div className="timeline-row-3">
+          <footer>
+            {token && Object.keys(albumData).length === 0
+              ? <button onClick={getFollowedArtists}>Load timeline</button>
+              : ''}
+            {!token
+              ? <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join('%20')}&response_type=${RESPONSE_TYPE}&show_dialog=true`}>Login to Spotify</a>
+              : <button onClick={logout}>Logout</button>}
+          </footer>
 
-          </div> */}
         </div>
       </main>
     </div>

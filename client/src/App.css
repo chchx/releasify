@@ -20,6 +20,18 @@ body {
   color: white;
 }
 
+footer {
+  /* background-color: #282c34; */
+  /* min-height: 100vh; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  font-size: calc(10px + 2vmin);
+  color: white;
+  margin-top: 30px;
+}
+
 main {
   /* height: 500px; */
 }
@@ -29,7 +41,7 @@ main {
   flex-direction: column;
   /* border: solid 1px white; */
   /* border-style: dotted; */
-  width: 90%;
+  width: 85%;
   margin: 0 auto;
   margin-top: 40px;
 }
@@ -39,6 +51,7 @@ main {
   flex-direction: row;
   /* border: solid 1px white; */
   /* height: 300px; */
+  margin-bottom: 30px;
 }
 
 ul {
@@ -47,6 +60,11 @@ ul {
   color: white;
   font-size: 14px;
   padding-left: 20;
+}
+
+li {
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 .month-container {
