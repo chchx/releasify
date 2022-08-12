@@ -168,7 +168,6 @@ function App() {
   };
 
   const keyHandler = (e) => {
-    console.log('User pressed: ', e.key)
     if (e.key === 'ArrowLeft') {
       setYear(year - 1);
       // setAlbumCalendar(createCalendar(albumData, year));
@@ -183,10 +182,8 @@ function App() {
   return (
     <div className="App" tabIndex={0} onKeyDown={keyHandler}>
       <header className="App-header">
-        <h1>Timelineify</h1>
-        {token && Object.keys(albumCalendar).length === 0
-          ? <button onClick={getFollowedArtists}>Load timeline</button>
-          : ''}
+        <h1>Releasify</h1>
+
       </header>
       <main>
         {Object.keys(albumCalendar).length > 1
@@ -239,6 +236,9 @@ function App() {
           </svg>
         }
       </main>
+      {token && Object.keys(albumCalendar).length === 0
+        ? <button onClick={getFollowedArtists}>Load timeline</button>
+        : ''}
       <div className="logout-container">
         {!token
           ? <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scopes.join('%20')}&response_type=${RESPONSE_TYPE}&show_dialog=true`}>Login to Spotify</a>

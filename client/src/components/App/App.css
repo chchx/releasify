@@ -52,11 +52,11 @@ h1 {
 }
 
 h2 {
-  margin-top: 12px;
+  margin-top: 24px;
   margin-bottom: 0;
   color: white;
-  font-size: 38px;
-
+  font-size: 40px;
+  /* text-decoration: underline; */
 }
 
 .row-container {
